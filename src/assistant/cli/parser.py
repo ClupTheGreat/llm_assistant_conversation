@@ -21,12 +21,13 @@ import argparse
 def cli_parser():
     parser = argparse.ArgumentParser()
 
+    group = parser.add_mutually_exclusive_group()
     # Used for one off question with the LLM
-    parser.add_argument("-a","--ask", help='Talk to the LLM! Make sure to contain your text within "double quotes"')
+    group.add_argument("-a","--ask", help='Talk to the LLM! Make sure to contain your text within "double quotes"')
 
     # Used for a chat, which saves conversation history with the LLM
-    parser.add_argument("-c", "--chat", help='Have a conversation with the LLM, unlike ask, this will store a memory of the current conversation you are having with the LLM.')
-
+    group.add_argument("-c", "--chat", help='Have a conversation with the LLM, unlike ask, this will store a memory of the current conversation you are having with the LLM.')
+    
     return parser.parse_args()
 
 

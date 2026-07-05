@@ -10,7 +10,7 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
-
+# Animation
 
 def animate(loading: threading.Event):
     # Simple CLI animation, loading spinner
@@ -28,10 +28,12 @@ loading = threading.Event()
 # main thread.
 thinking_thread = threading.Thread(target=animate, args=(loading,))
 
+# Handling different flags from the user
+
 def handle_ask(args, chat_service: ChatService):
     logger.info("Hangling ask")
     #for piece in chat_service.ask_streaming(args):
-    for piece in chat_service.ask_streaming(args.ask):
+    for piece in chat_service.ask_streaming(args):
         # Handles the empty spaces in the cli with thinking animation
         if piece != '':
             logger.debug("First token detected for stream, stopping spinner animation")
@@ -40,9 +42,11 @@ def handle_ask(args, chat_service: ChatService):
         # Printing as a stream from LLM
         print(piece, end='', flush=True)
 
-def handle_chat(args):
+def handle_chat(args, chat_service: ChatService):
     pass
 
+
+# run() will be called by the main function, this acts as the entry point to the software
 def run():
     # We will eventually accept a model from the user if provided, but we will use a placeholder model
     # for now.
@@ -66,6 +70,8 @@ def run():
         try:
             if args.ask:
                 handle_ask(args.ask, chat_service=chat_service)
+            if args.chat:
+                handle_chat(args.chat, chat_service=chat_service)
         except Exception:
             logger.exception("Error while streaming response from chat_service")
             loading.set()
