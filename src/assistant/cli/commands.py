@@ -1,6 +1,8 @@
 # imports for application
 from assistant.cli.parser import cli_parser
 from assistant.services.chat import ChatService
+from assistant.services.conversation_service import ConversationService
+from assistant.providers.ollama_provider import OllamaProvider
 
 # general imports
 import itertools
@@ -31,9 +33,15 @@ thinking_thread = threading.Thread(target=animate, args=(loading,))
 # Handling different flags from the user
 
 def handle_ask(args, chat_service: ChatService):
-    logger.info("Hangling ask")
+    logger.info("Handling ask")
+
+    #Creating conversation
+    system_prompt = "You are a helpful CLI assistant"
+    conversation_single = ConversationService(system_prompt=system_prompt)
+    conversation_single.add_conversation(args)
+    
     #for piece in chat_service.ask_streaming(args):
-    for piece in chat_service.ask_streaming(args):
+    for piece in chat_service.ask_streaming(conversation_single.get_conversation()):
         # Handles the empty spaces in the cli with thinking animation
         if piece != '':
             logger.debug("First token detected for stream, stopping spinner animation")
@@ -54,7 +62,9 @@ def run():
     # Initialize chat model
     use_model = "qwen3.5:9b"
     logger.info("Initializing chat service with model =%s", use_model)
-    chat_service = ChatService(model=use_model)
+    # Initializing an llm provider
+    llmProvider = OllamaProvider(model_arg=use_model)
+    chat_service = ChatService(model=use_model, provider=llmProvider)
     
     # Accept arguments from the user
     args = cli_parser()
