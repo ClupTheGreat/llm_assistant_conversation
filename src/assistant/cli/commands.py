@@ -10,7 +10,17 @@ import threading
 import sys
 import time
 import logging
+from random import randint
 logger = logging.getLogger(__name__)
+
+
+# Helper stuff
+
+# Temporary name
+username = "Clup"
+assistant_name = "Agent M"
+# Stolen from Gippity
+list_of_greet_messages = ["Ready when you are.", "What's on the agenda today?", f"How can I help, {username}" ]
 
 # Animation
 
@@ -24,6 +34,16 @@ def animate(loading: threading.Event):
         time.sleep(0.1)
     sys.stdout.write('\n')
 
+# Greet Randomizer
+
+def greet_randomizer() -> str:
+    random_int = randint(0, len(list_of_greet_messages) - 1)
+    greet = list_of_greet_messages[random_int]
+    return greet
+
+
+#  ----------------------------------------------------------------------------
+
 # Flag for thinking animation thread
 loading = threading.Event() 
 # Starting another thread for thinking animation to not block the
@@ -35,7 +55,7 @@ thinking_thread = threading.Thread(target=animate, args=(loading,))
 def handle_ask(args, chat_service: ChatService):
     logger.info("Handling ask")
 
-    #Creating conversation
+    # Creating conversation
     system_prompt = "You are a helpful CLI assistant"
     conversation_single = ConversationService(system_prompt=system_prompt)
     conversation_single.add_conversation(args)
@@ -51,6 +71,33 @@ def handle_ask(args, chat_service: ChatService):
         print(piece, end='', flush=True)
 
 def handle_chat(args, chat_service: ChatService):
+    logger.info("Handling Chat")
+    loading.set()
+    thinking_thread.join()
+    
+    # Creating a long conversation
+    system_prompt = "You are a helpful CLI assistant"
+    conversation_long = ConversationService(system_prompt=system_prompt)
+
+    greet = greet_randomizer()
+    print(greet)
+    while True:
+        user_input: str = input(" You > ")
+        conversation_long.add_conversation(user_input)
+#        loading.clear()
+#        thinking_thread.start()
+        assistant_convo: str = ""
+#        print(assistant_name + " > ")
+        for piece in chat_service.ask_streaming(conversation_long.get_conversation()):
+            if piece != '':
+                logger.debug("First token detected for stream, stopping spinner animation")
+#                loading.set() 
+#                thinking_thread.join()
+                assistant_convo = assistant_convo + piece
+            # Printing as a stream from LLM
+            print(piece, end='', flush=True)
+        print("\n")
+        conversation_long.add_assistant_conversation(assistant_convo)
     pass
 
 

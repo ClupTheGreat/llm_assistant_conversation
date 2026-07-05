@@ -15,7 +15,7 @@ class ConversationService:
     def add_conversation(self, user_prompt: str):
         self.conversations.add_message(MessageRole.USER, user_prompt)
 
-    def add_assistant_converstaion(self, assistant_prompt: str):
+    def add_assistant_conversation(self, assistant_prompt: str):
         self.conversations.add_message(MessageRole.ASSISTANT, assistant_prompt)
 
     def get_conversation(self) -> Conversation:
