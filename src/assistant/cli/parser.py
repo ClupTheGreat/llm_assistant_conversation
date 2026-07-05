@@ -20,13 +20,19 @@ import argparse
 
 def cli_parser():
     parser = argparse.ArgumentParser()
+
+    # Used for one off question with the LLM
     parser.add_argument("-a","--ask", help='Talk to the LLM! Make sure to contain your text within "double quotes"')
-    args = parser.parse_args()
 
-    # Implement the functionality to connect to chat.py and get back information from it.
+    # Used for a chat, which saves conversation history with the LLM
+    parser.add_argument("-c", "--chat", help='Have a conversation with the LLM, unlike ask, this will store a memory of the current conversation you are having with the LLM.')
 
-    if args.ask:
-        return f"{args.ask}"
+    return parser.parse_args()
+
+
+
+    #if args.ask:
+    #    return f"{args.ask}"
 
 if __name__ == "__main__":
     args_parser = cli_parser()

@@ -10,6 +10,8 @@ import time
 import logging
 logger = logging.getLogger(__name__)
 
+
+
 def animate(loading: threading.Event):
     # Simple CLI animation, loading spinner
     for c in itertools.cycle(['|','/','-','\\']):
@@ -19,6 +21,27 @@ def animate(loading: threading.Event):
         sys.stdout.flush()
         time.sleep(0.1)
     sys.stdout.write('\n')
+
+# Flag for thinking animation thread
+loading = threading.Event() 
+# Starting another thread for thinking animation to not block the
+# main thread.
+thinking_thread = threading.Thread(target=animate, args=(loading,))
+
+def handle_ask(args, chat_service: ChatService):
+    logger.info("Hangling ask")
+    #for piece in chat_service.ask_streaming(args):
+    for piece in chat_service.ask_streaming(args.ask):
+        # Handles the empty spaces in the cli with thinking animation
+        if piece != '':
+            logger.debug("First token detected for stream, stopping spinner animation")
+            loading.set() 
+            thinking_thread.join()
+        # Printing as a stream from LLM
+        print(piece, end='', flush=True)
+
+def handle_chat(args):
+    pass
 
 def run():
     # We will eventually accept a model from the user if provided, but we will use a placeholder model
@@ -32,30 +55,17 @@ def run():
     # Accept arguments from the user
     args = cli_parser()
 
-    # Flag for thinking animation thread
-    loading = threading.Event() 
 
     if args is None:
         logger.warning("No args provided by the user")
         print("Please provide some input")
     else:
-        # Starting another thread for thinking animation to not block the
-        # main thread.
-        thinking_thread = threading.Thread(target=animate, args=(loading,))
         logger.debug("Starting spinner thread")
         thinking_thread.start()
         
         try:
-            for piece in chat_service.ask_streaming(args):
-
-                # Handles the empty spaces in the cli with thinking animation
-                if piece != '':
-                    logger.debug("First token detected for stream, stopping spinner animation")
-                    loading.set() 
-                    thinking_thread.join()
-
-                # Printing as a stream from LLM
-                print(piece, end='', flush=True)
+            if args.ask:
+                handle_ask(args.ask, chat_service=chat_service)
         except Exception:
             logger.exception("Error while streaming response from chat_service")
             loading.set()

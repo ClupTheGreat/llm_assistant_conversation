@@ -1,5 +1,5 @@
 [project]
-name = "cli-based-llm-tool"
+name = "llm_assistant_conversation"
 version = "0.1.0"
 description = "Making a cli tool which allows a user to interact with an llm through cli commands, the user is never exposed directly to the llm."
 readme = "README.md"
